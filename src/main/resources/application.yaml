@@ -1,0 +1,51 @@
+spring:
+  application:
+    name: marfeel
+  config:
+    import:
+      - "optional:file:./.env[.properties]"
+  cloud:
+    circuitbreaker:
+      reactive-http-services:
+        enabled: false
+  webflux:
+    apiversion:
+      detect-supported: true
+      use:
+        header: API-Version
+  reactor:
+    context-propagation: auto
+  r2dbc:
+    url: r2dbc:mysql://${DB_HOST}:${DB_PORT}/${DB_NAME}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+  threads:
+    virtual:
+      enabled: true
+  liquibase:
+    change-log: classpath:/db/changelog/db.changelog-master.xml
+    default-schema: ${DB_NAME}
+    url: jdbc:mysql://${DB_HOST}:${DB_PORT}/${DB_NAME}
+    user: ${DB_USER}
+    password: ${DB_PASSWORD}
+
+endpoint:
+  a1:
+    url: http://localhost:${A1_PORT}
+  s1:
+    url: http://localhost:${S1_PORT}
+  s2:
+    url: http://localhost:${S2_PORT}
+    key: ${S2_API_KEY}
+  s3:
+    url: http://localhost:${S3_PORT:8084}
+    token: ${S3_TOKEN}
+
+server:
+  port: 9000
+
+logging:
+  level:
+    "com.marfeel": DEBUG
+    "org.springframework.web.reactive.function.client.ExchangeFunctions": DEBUG
+    "org.springframework.r2dbc.core.DefaultDatabaseClient": DEBUG

@@ -1,0 +1,26 @@
+{
+  "request": {
+    "method": "GET",
+    "urlPath": "/s2/items",
+    "headers": {
+      "X-Api-Key": {
+        "equalTo": "test-api-key"
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "items": [
+        {
+          "item": {
+            "itemId": "S2-100"
+          }
+        }
+      ]
+    }
+  }
+}

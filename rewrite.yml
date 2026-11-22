@@ -1,0 +1,45 @@
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: com.marfeel.Recipe
+recipeList:
+  - org.openrewrite.hcl.format.RemoveTrailingWhitespace
+  - org.openrewrite.java.OrderImports
+  - org.openrewrite.java.RemoveUnusedImports
+  - org.openrewrite.java.jspecify.MigrateToJSpecify
+  - org.openrewrite.java.jspecify.JSpecifyBestPractices
+  - org.openrewrite.java.testing.assertj.Assertj
+  - org.openrewrite.java.testing.assertj.JUnitToAssertj
+  - org.openrewrite.java.testing.cleanup.BestPractices
+  - org.openrewrite.java.testing.junit6.JUnit5to6Migration
+  - org.openrewrite.java.testing.junit.JUnit6BestPractices
+  - org.openrewrite.staticanalysis.CodeCleanup
+  - org.openrewrite.staticanalysis.CommonStaticAnalysis
+  - org.openrewrite.staticanalysis.JavaApiBestPractices
+---
+type: specs.openrewrite.org/v1beta/style
+name: com.marfeel.Style
+styleConfigs:
+  - org.openrewrite.java.style.ImportLayoutStyle:
+      classCountToUseStarImport: 999
+      nameCountToUseStarImport: 999
+      layout:
+        - import com.marfeel.*
+        - import static com.marfeel.*
+        - <blank line>
+        - import org.springframework.*
+        - import static org.springframework.*
+        - <blank line>
+        - import jakarta.*
+        - import java.*
+        - import javax.*
+        - <blank line>
+        - import all other imports
+        - import static all other imports
+        - <blank line>
+        - import lombok.*
+  - org.openrewrite.java.style.TabsAndIndentsStyle:
+      useTabCharacter: true
+      tabSize: 2
+      indentSize: 2
+      continuationIndent: 2
+      indentsRelativeToExpressionStart: true

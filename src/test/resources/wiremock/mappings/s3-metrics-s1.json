@@ -1,0 +1,35 @@
+{
+  "request": {
+    "method": "GET",
+    "urlPath": "/s3/metrics",
+    "headers": {
+      "Authorization": {
+        "equalTo": "Bearer test-metrics-token"
+      }
+    },
+    "queryParameters": {
+      "service": {
+        "equalTo": "S1"
+      },
+      "code": {
+        "equalTo": "S1-A"
+      },
+      "subcode": {
+        "equalTo": "X1"
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "service": "S1",
+      "code": "S1-A",
+      "subcode": "X1",
+      "subscribers": 12,
+      "iban": "test-iban-s1"
+    }
+  }
+}

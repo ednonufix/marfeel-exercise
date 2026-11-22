@@ -1,0 +1,35 @@
+{
+  "request": {
+    "method": "POST",
+    "urlPath": "/s1/subscribe",
+    "headers": {
+      "Authorization": {
+        "equalTo": "Bearer catalog-token"
+      }
+    },
+    "bodyPatterns": [
+      {
+        "equalToJson": {
+          "account": {
+            "ref": "U3"
+          },
+          "product": {
+            "code": "S1-A",
+            "subcode": "X1"
+          }
+        }
+      }
+    ]
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "state": "ACTIVE",
+      "subscriptionId": "s1-test"
+    },
+    "fixedDelayMilliseconds": 500
+  }
+}

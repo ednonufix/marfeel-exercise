@@ -1,0 +1,31 @@
+{
+  "request": {
+    "method": "POST",
+    "urlPath": "/s2/subscribe",
+    "headers": {
+      "X-Api-Key": {
+        "equalTo": "test-api-key"
+      }
+    },
+    "bodyPatterns": [
+      {
+        "equalToJson": {
+          "user": "U1",
+          "item": {
+            "itemId": "S2-100"
+          }
+        }
+      }
+    ]
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "status": "ERROR",
+      "reason": "user not eligible"
+    }
+  }
+}

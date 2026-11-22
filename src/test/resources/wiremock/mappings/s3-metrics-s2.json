@@ -1,0 +1,31 @@
+{
+  "request": {
+    "method": "GET",
+    "urlPath": "/s3/metrics",
+    "headers": {
+      "Authorization": {
+        "equalTo": "Bearer test-metrics-token"
+      }
+    },
+    "queryParameters": {
+      "service": {
+        "equalTo": "S2"
+      },
+      "itemId": {
+        "equalTo": "S2-100"
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "service": "S2",
+      "itemId": "S2-100",
+      "subscribers": 34,
+      "iban": "test-iban-s2"
+    }
+  }
+}

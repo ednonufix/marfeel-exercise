@@ -1,0 +1,27 @@
+{
+  "request": {
+    "method": "GET",
+    "urlPath": "/s1/products",
+    "headers": {
+      "Authorization": {
+        "equalTo": "Bearer catalog-token"
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "products": [
+        {
+          "product": {
+            "code": "S1-A",
+            "subcode": "X1"
+          }
+        }
+      ]
+    }
+  }
+}
