@@ -1,4 +1,4 @@
-package com.marfeel.exercise.infrastructure.adapter.rest.output.persistence.repository;
+package com.marfeel.exercise.infrastructure.adapter.persistence.repository;
 
 import com.marfeel.exercise.application.dto.Attempt;
 import com.marfeel.exercise.application.dto.CriteriaFilter;
@@ -6,11 +6,13 @@ import com.marfeel.exercise.application.dto.SaveSubscriptionCommand;
 import com.marfeel.exercise.application.dto.Subscription;
 import com.marfeel.exercise.application.ports.output.ProductSubscriptionRepository;
 import com.marfeel.exercise.application.ports.output.UserSubscriptionsRepository;
+import com.marfeel.exercise.domain.model.ProductRef;
 import com.marfeel.exercise.domain.vo.SubscriptionStatus;
 import com.marfeel.exercise.domain.vo.UserType;
-import com.marfeel.exercise.infrastructure.adapter.rest.output.persistence.entity.SubscriptionAttemptEntity;
-import com.marfeel.exercise.infrastructure.adapter.rest.output.persistence.entity.SubscriptionEntity;
-import com.marfeel.exercise.infrastructure.adapter.rest.output.persistence.mapper.SubscriptionPersistenceMapper;
+import com.marfeel.exercise.infrastructure.adapter.persistence.entity.SubscriptionAttemptEntity;
+import com.marfeel.exercise.infrastructure.adapter.persistence.entity.SubscriptionEntity;
+import com.marfeel.exercise.infrastructure.adapter.persistence.entity.SubscriptionKey;
+import com.marfeel.exercise.infrastructure.adapter.persistence.mapper.SubscriptionPersistenceMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
@@ -33,16 +35,21 @@ public class ProductSubscriptionAdapter implements ProductSubscriptionRepository
 	private final SubscriptionPersistenceMapper mapper;
 
 	@Override
+	public Mono<Boolean> isActive(UserType user, ProductRef product) {
+		var key = SubscriptionKey.of(user, product);
+		return entityTemplate.select(SubscriptionEntity.class).matching(query(key.criteria())).exists();
+	}
+
+	@Override
 	@Transactional
 	public Mono<Void> save(SaveSubscriptionCommand command) {
 		var attempt = mapper.toAttempt(command);
-		var saveAttempt = entityTemplate.insert(attempt).then();
-		return switch (command.status()) {
-			case SUCCESS -> entityTemplate.insert(mapper.toSubscription(attempt, command.providerSubscriptionId()))
-					.then(saveAttempt);
-			case FAILED -> saveAttempt;
-			case ALREADY_SUBSCRIBED -> Mono.error(new IllegalArgumentException("Expected a provider outcome"));
+		Mono<Void> saveOutcome = switch (command.status()) {
+			case SUCCESS -> entityTemplate.insert(mapper.toSubscription(attempt, command.providerSubscriptionId())).then();
+			case FAILED -> Mono.empty();
+			default -> Mono.error(new IllegalArgumentException("Expected a provider outcome"));
 		};
+		return saveOutcome.then(entityTemplate.insert(attempt)).then();
 	}
 
 	@Override

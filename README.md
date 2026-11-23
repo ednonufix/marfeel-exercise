@@ -2,7 +2,8 @@
 
 Java 21, Spring Boot, WebFlux, R2DBC and MySQL. The registry owns subscription state and attempt history. WebClient lets
 a slow S1 subscription wait for its response without occupying a request thread. Catalog reads from S1 and S2 can
-overlap. Subscription batches process distinct products sequentially. S3 supplies current metrics on reads.
+overlap. A batch processes distinct products concurrently. Identify each result by its product reference. S3 supplies
+current metrics on reads.
 
 ## Run locally
 
@@ -24,6 +25,18 @@ The registry listens on port 9000. Use the `API-Version: v1` header and HTTP Bas
 `U1 / U1`, `U2 / U2` and `U3 / U3`. Each user can access their own routes. In production use TLS and an identity
 provider.
 
+## OpenAPI
+
+Open [Swagger UI](http://localhost:9000/swagger-ui.html) and select **Registry** for the public API or **Downstream
+services** for calls to A1, S1, S2 and S3. The JSON documents are available
+at [/v3/api-docs](http://localhost:9000/v3/api-docs)
+and [/openapi/downstream.json](http://localhost:9000/openapi/downstream.json). To call the registry, authorize with HTTP
+Basic and send `API-Version: v1`.
+
+The downstream document is a reference for the provider URLs, authentication and payloads. Swagger UI sends requests
+directly from your browser. On the default local ports the mock providers run on a different origin and do not enable
+CORS, so use the existing smoke tests in [exercise/README.md](exercise/README.md) to call them directly.
+
 ## Routes
 
 All routes below start with `/users/{userId}`.
@@ -31,7 +44,7 @@ All routes below start with `/users/{userId}`.
 | Method | Path                                              | Response                                                                                                                                                                      |
 |--------|---------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | GET    | `/catalog`                                        | Available S1 and S2 products enriched with subscribers and IBAN from S3.                                                                                                      |
-| POST   | `/subscriptions`                                  | One result per distinct requested product, in request order.                                                                                                                  |
+| POST   | `/subscriptions`                                  | One result per distinct requested product. Order may vary.                                                                                                                    |
 | GET    | `/subscriptions`                                  | Active subscriptions with metrics and the full attempt history. Optional active filters are `service`, `code`, `subcode`, `itemId`. S1 owns code and subcode. S2 owns itemId. |
 | GET    | `/subscription-attempts?status=FAILED&service=S2` | Attempts in reverse chronological order. Both filters are optional. Includes failed products the user has never held.                                                         |
 | GET    | `/subscriptions/{id}`                             | An active subscription with metrics, or 404. Use the numeric ID from the active list.                                                                                         |
@@ -85,9 +98,13 @@ Within a batch, duplicate products are processed once. A later request for an ac
 and skips the provider call. A successful subscription and its attempt are persisted together. A rejection records a
 failed attempt. Deletion removes the active row and permits resubscription.
 
-Two simultaneous requests can both reach the provider before either active row is committed. The database enforces a
-unique active row per user and product. Provider-side idempotency or reconciliation would be needed to handle ambiguous
-outcomes after a network or database failure.
+A process-local Caffeine cache tracks each user and product while an attempt runs. Atomic acquisition gives overlapping
+requests IN_PROGRESS. The owner checks for an active subscription, calls the provider if needed and releases the key
+after persistence or error. Each reservation expires two minutes after acquisition, including after client cancellation.
+Once expired, another request can enter even if the provider is still processing the first call. Success writes the
+active row and its history in one transaction. The cache is empty after a restart. Different registry instances can
+still call the provider concurrently, and an interrupted remote call may already have succeeded. The database unique key
+protects the local active row.
 
 The registry reads metrics per product. An S3 failure can prevent delivery of the enriched response, including after a
 committed deletion. Retrying the read or the idempotent deletion retrieves the current list. At higher volumes, paginate

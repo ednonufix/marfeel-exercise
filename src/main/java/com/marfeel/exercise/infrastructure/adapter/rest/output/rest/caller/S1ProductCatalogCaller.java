@@ -14,6 +14,7 @@ public class S1ProductCatalogCaller {
 
 	private final S1Client s1Client;
 
+	//@Cacheable("")
 	public Flux<ProductRef> getProducts() {
 		return s1Client.getProducts()
 				.flatMapIterable(S1ProductsResponse::products)

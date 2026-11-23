@@ -30,7 +30,9 @@ public class SecurityConfiguration {
 		return http.csrf(ServerHttpSecurity.CsrfSpec::disable)
 				.securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
 				.httpBasic(Customizer.withDefaults())
-				.authorizeExchange(routes -> routes.pathMatchers("/users/{userId}/**")
+				.authorizeExchange(routes -> routes
+						.pathMatchers(RegistryOpenApiConfiguration.documentationPaths()).permitAll()
+						.pathMatchers("/users/{userId}/**")
 						.access((auth, context) -> auth.map(principal ->
 										principal.getName().equalsIgnoreCase(String.valueOf(context.getVariables().get("userId"))))
 								.defaultIfEmpty(false).map(AuthorizationDecision::new))

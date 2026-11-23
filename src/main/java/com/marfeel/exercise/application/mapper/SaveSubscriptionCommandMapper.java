@@ -3,6 +3,7 @@ package com.marfeel.exercise.application.mapper;
 import com.marfeel.exercise.application.dto.SaveSubscriptionCommand;
 import com.marfeel.exercise.application.dto.SubscriptionBatchResult.Result;
 import com.marfeel.exercise.domain.model.ProductRef;
+import com.marfeel.exercise.domain.vo.SubscriptionStatus;
 import com.marfeel.exercise.domain.vo.UserType;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -25,9 +26,9 @@ public interface SaveSubscriptionCommandMapper {
 	Result toResult(SaveSubscriptionCommand command);
 
 	@Mapping(target = "ref", source = "ref")
-	@Mapping(target = "status", constant = "ALREADY_SUBSCRIBED")
+	@Mapping(target = "status", source = "status")
 	@Mapping(target = "providerSubscriptionId", ignore = true)
 	@Mapping(target = "failureReason", ignore = true)
-	Result toAlreadySubscribed(ProductRef ref);
+	Result existing(ProductRef ref, SubscriptionStatus status);
 
 }

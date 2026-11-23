@@ -1,31 +1,22 @@
 package com.marfeel.exercise;
 
+import java.time.Duration;
 import java.util.List;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
-import com.marfeel.exercise.application.dto.CriteriaFilter;
-import com.marfeel.exercise.application.dto.Subscription;
-import com.marfeel.exercise.application.ports.output.UserSubscriptionsRepository;
-import com.marfeel.exercise.domain.model.S1Product;
-import com.marfeel.exercise.domain.model.S2Product;
-import com.marfeel.exercise.domain.vo.UserType;
+import com.marfeel.exercise.support.RegistryTestDatabase;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.boot.webtestclient.autoconfigure.AutoConfigureWebTestClient;
-import org.springframework.r2dbc.core.DatabaseClient;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.reactive.server.WebTestClient;
-import org.springframework.transaction.ReactiveTransactionManager;
-import org.springframework.transaction.reactive.TransactionalOperator;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.testcontainers.mysql.MySQLContainer;
 import org.wiremock.spring.ConfigureWireMock;
 import org.wiremock.spring.EnableWireMock;
 import org.wiremock.spring.InjectWireMock;
-import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import tools.jackson.databind.JsonNode;
 
@@ -34,7 +25,6 @@ import static com.github.tomakehurst.wiremock.client.WireMock.matchingJsonPath;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 
 @AutoConfigureWebTestClient
@@ -43,34 +33,14 @@ import static org.springframework.http.MediaType.APPLICATION_JSON;
 @EnableWireMock(@ConfigureWireMock(baseUrlProperties = {
 		"endpoint.a1.url", "endpoint.s1.url", "endpoint.s2.url", "endpoint.s3.url"}))
 class MarfeelApplicationTests {
-	@LocalServerPort
-	int port;
+	private static final Duration TIMEOUT = Duration.ofSeconds(10);
+
+	private @LocalServerPort int port;
 	private @InjectWireMock WireMockServer wireMock;
 
 	@DynamicPropertySource
 	static void database(DynamicPropertyRegistry properties) {
-		var port = System.getProperty("registry.test.mysql.port");
-		var password = System.getenv("REGISTRY_TEST_MYSQL_PASSWORD");
-		if (port == null) {
-			var mysql = new MySQLContainer("mysql:8").withDatabaseName("schema_check")
-					.withUsername("verify_user").withPassword("test-password");
-			mysql.start();
-			port = mysql.getMappedPort(3306).toString();
-			configureDatabase(properties, mysql.getHost(), port, mysql.getPassword());
-		} else {
-			configureDatabase(properties, "127.0.0.1", port, password);
-		}
-	}
-
-	private static void configureDatabase(DynamicPropertyRegistry p, String host, String port, String password) {
-		var address = host + ":" + port + "/schema_check";
-		p.add("spring.r2dbc.url", () -> "r2dbc:mysql://" + address);
-		p.add("spring.liquibase.url", () -> "jdbc:mysql://" + address);
-		p.add("spring.liquibase.default-schema", () -> "schema_check");
-		p.add("spring.r2dbc.username", () -> "verify_user");
-		p.add("spring.liquibase.user", () -> "verify_user");
-		p.add("spring.r2dbc.password", () -> password);
-		p.add("spring.liquibase.password", () -> password);
+		RegistryTestDatabase.register(properties);
 	}
 
 	private WebTestClient client(String user) {
@@ -81,39 +51,45 @@ class MarfeelApplicationTests {
 
 	@Test
 	void subscriptionsRecordEachProviderOutcomeAndKeepFailedProductsAvailable() {
-		assertDoesNotThrow(() -> {
-			String batch = """
-			               {"products":[{"service":"S1","code":"S1-A","subcode":"X1"},{"service":"S2","itemId":"S2-100"}]}
-			               """;
-			for (var user : List.of("U1", "U2")) {
-				var http = client(user);
-				boolean u1 = "U1".equals(user);
-				String failedService = u1 ? "S2" : "S1";
-				http.post().uri("/" + user + "/subscriptions").contentType(APPLICATION_JSON).bodyValue(batch)
-						.exchange().expectStatus().isOk().expectBody()
-						.jsonPath("$.results[0].status").isEqualTo(u1 ? "SUCCESS" : "FAILED")
-						.jsonPath("$.results[1].status").isEqualTo(u1 ? "FAILED" : "SUCCESS");
-				var failures = http.get().uri("/" + user + "/subscription-attempts?status=FAILED&service=" + failedService)
-						.exchange().expectStatus().isOk().expectBody().jsonPath("$.length()").isEqualTo(1)
-						.jsonPath("$[0].ref.service").isEqualTo(failedService);
-				if (u1) {
-					failures.jsonPath("$[0].failureReason").isEqualTo("user not eligible");
-				}
-				http.get().uri("/" + user + "/catalog").exchange().expectStatus().isOk().expectBody()
-						.jsonPath("$.products.length()").isEqualTo(1).jsonPath("$.products[0].ref.service").isEqualTo(failedService);
-				http.get().uri("/" + user + "/subscriptions").exchange().expectStatus().isOk().expectBody()
-						.jsonPath("$.activeSubscription.length()").isEqualTo(1)
-						.jsonPath("$.activeSubscription[0].detail.iban").exists()
-						.jsonPath("$.attemptsSubscription.length()").isEqualTo(2);
+		String batch = """
+		               {"products":[{"service":"S1","code":"S1-A","subcode":"X1"},{"service":"S2","itemId":"S2-100"}]}
+		               """;
+		for (var user : List.of("U1", "U2")) {
+			var http = client(user);
+			boolean u1 = "U1".equals(user);
+			String failedService = u1 ? "S2" : "S1";
+			http.post().uri("/" + user + "/subscriptions").contentType(APPLICATION_JSON).bodyValue(batch)
+					.exchange().expectStatus().isOk().expectBody()
+					.jsonPath("$.results[?(@.ref.service == 'S1')].status").isEqualTo(List.of(u1 ? "SUCCESS" : "FAILED"))
+					.jsonPath("$.results[?(@.ref.service == 'S2')].status").isEqualTo(List.of(u1 ? "FAILED" : "SUCCESS"));
+			var failures = http.get().uri("/" + user + "/subscription-attempts?status=FAILED&service=" + failedService)
+					.exchange().expectStatus().isOk().expectBody().jsonPath("$.length()").isEqualTo(1)
+					.jsonPath("$[0].ref.service").isEqualTo(failedService);
+			if (u1) {
+				failures.jsonPath("$[0].failureReason").isEqualTo("user not eligible");
 			}
-			WebTestClient.bindToServer().baseUrl("http://localhost:" + port).build()
-					.get().uri("/users/U1/subscriptions").header("API-Version", "v1").exchange().expectStatus().isUnauthorized();
-			client("U1").get().uri("/U2/subscriptions").exchange().expectStatus().isForbidden();
-		});
+			http.get().uri("/" + user + "/catalog").exchange().expectStatus().isOk().expectBody()
+					.jsonPath("$.products.length()").isEqualTo(1).jsonPath("$.products[0].ref.service").isEqualTo(failedService);
+			http.get().uri("/" + user + "/subscriptions").exchange().expectStatus().isOk().expectBody()
+					.jsonPath("$.activeSubscription.length()").isEqualTo(1)
+					.jsonPath("$.activeSubscription[0].detail.iban").exists()
+					.jsonPath("$.attemptsSubscription.length()").isEqualTo(2);
+		}
+		WebTestClient.bindToServer().baseUrl("http://localhost:" + port).build()
+				.get().uri("/users/U1/subscriptions").header("API-Version", "v1").exchange().expectStatus().isUnauthorized();
+		client("U1").post().uri("/U1/subscriptions").contentType(APPLICATION_JSON)
+				.bodyValue("""
+				           {"products":[{"service":"S2","itemId":"S2-100"}]}
+				           """)
+				.exchange().expectStatus().isOk().expectBody()
+				.jsonPath("$.results[0].status").isEqualTo("FAILED");
+		wireMock.verify(2, postRequestedFor(urlPathEqualTo("/s2/subscribe"))
+				.withRequestBody(matchingJsonPath("$.user", equalTo("U1"))));
+		client("U1").get().uri("/U2/subscriptions").exchange().expectStatus().isForbidden();
 	}
 
 	@Test
-	void repeatedSubscriptionSkipsProviderUntilTheProductIsDeleted() {
+	void concurrentSubscriptionsInvokeProviderOnceUntilDeleted() {
 		String subscription = """
 		                      {"products":[{"service":"S1","code":"S1-A","subcode":"X1"}]}
 		                      """;
@@ -122,38 +98,59 @@ class MarfeelApplicationTests {
 		var post = web.post().uri("/subscriptions").contentType(APPLICATION_JSON).bodyValue(subscription)
 				.retrieve().bodyToMono(JsonNode.class).map(body -> body.at("/results/0/status").asString());
 
-		post.as(StepVerifier::create).expectNext("SUCCESS").verifyComplete();
-		post.as(StepVerifier::create).expectNext("ALREADY_SUBSCRIBED").verifyComplete();
+		Mono.zip(post, post).as(StepVerifier::create)
+				.assertNext(pair -> assertThat(List.of(pair.getT1(), pair.getT2())).containsExactlyInAnyOrder("SUCCESS",
+						"IN_PROGRESS"))
+				.expectComplete().verify(TIMEOUT);
+		post.as(StepVerifier::create).expectNext("ALREADY_SUBSCRIBED").expectComplete().verify(TIMEOUT);
 		wireMock.verify(1, postRequestedFor(urlPathEqualTo("/s1/subscribe"))
 				.withRequestBody(matchingJsonPath("$.account.ref", equalTo("U3"))));
 		var user = client("U3");
 		user.get().uri("/U3/subscriptions?itemId=S1-A").exchange().expectStatus().isOk().expectBody()
 				.jsonPath("$.activeSubscription.length()").isEqualTo(0);
-		var id = web.get().uri("/subscriptions").retrieve().bodyToMono(JsonNode.class)
-				.map(body -> body.at("/activeSubscription/0/id").asLong());
-		id.flatMap(value -> web.delete().uri("/subscriptions/" + value).retrieve().bodyToMono(JsonNode.class))
-				.as(StepVerifier::create).assertNext(list -> assertThat(list.size()).isZero()).verifyComplete();
-		post.as(StepVerifier::create).expectNext("SUCCESS").verifyComplete();
+		var active = user.get().uri("/U3/subscriptions?service=S1&subcode=X1").exchange()
+				.expectStatus().isOk().expectBody(JsonNode.class).returnResult().getResponseBody();
+		assertThat(active).isNotNull();
+		long id = active.at("/activeSubscription/0/id").asLong();
+		assertThat(id).isPositive();
+		user.get().uri("/U3/subscriptions/" + id).exchange().expectStatus().isOk().expectBody()
+				.jsonPath("$.id").isEqualTo(id)
+				.jsonPath("$.detail.ref.code").isEqualTo("S1-A")
+				.jsonPath("$.detail.iban").exists();
+		client("U2").get().uri("/U2/subscriptions/" + id).exchange().expectStatus().isNotFound();
+		user.delete().uri("/U3/subscriptions/" + id).exchange().expectStatus().isOk()
+				.expectBodyList(JsonNode.class).hasSize(0);
+		user.get().uri("/U3/subscriptions/" + id).exchange().expectStatus().isNotFound();
+		post.as(StepVerifier::create).expectNext("SUCCESS").expectComplete().verify(TIMEOUT);
 		user.get().uri("/U3/subscription-attempts?status=SUCCESS").exchange().expectStatus().isOk()
 				.expectBody().jsonPath("$.length()").isEqualTo(2);
 	}
 
 
 	@Test
-	void productFiltersDistinguishIdenticalCodesAcrossServices(@Autowired DatabaseClient db,
-			@Autowired UserSubscriptionsRepository repository, @Autowired ReactiveTransactionManager transactions) {
-		var seed = db.sql("""
-		                  INSERT INTO subscriptions (user_id, service, product_code, product_subcode, provider_subscription_id)
-		                  VALUES ('U3', 'S1', 'SHARED', 'X1', 'first'), ('U3', 'S2', 'SHARED', '', 'second')
-		                  """).fetch().rowsUpdated();
-		var byCode = repository.findActiveSubscriptions(UserType.U3, new CriteriaFilter(null, "SHARED", null, null));
-		var byItem = repository.findActiveSubscriptions(UserType.U3, new CriteriaFilter(null, null, null, "SHARED"));
-		TransactionalOperator.create(transactions).execute(tx -> {
-					tx.setRollbackOnly();
-					return seed.thenMany(Flux.concat(byCode, byItem)).map(Subscription::ref);
-				}).as(StepVerifier::create)
-				.expectNext(new S1Product("S1", "SHARED", "X1"), new S2Product("S2", "SHARED"))
-				.verifyComplete();
+	void publishesRegistryAndProviderContracts() {
+		var http = WebTestClient.bindToServer().baseUrl("http://localhost:" + port).build();
+		var location = http.get().uri("/swagger-ui.html").exchange().expectStatus().is3xxRedirection()
+				.returnResult(Void.class).getResponseHeaders().getLocation();
+		assertThat(location).isNotNull();
+		http.get().uri(location.toString()).exchange().expectStatus().isOk();
+		http.get().uri("/v3/api-docs/swagger-config").exchange().expectStatus().isOk();
+		http.get().uri("/v3/api-docs.yaml").exchange().expectStatus().isOk();
+		http.get().uri("/v3/api-docs").exchange().expectStatus().isOk().expectBody()
+				.jsonPath("$.info.title").isEqualTo("Subscription Registry")
+				.jsonPath("$.components.securitySchemes.registryBasic.scheme").isEqualTo("basic")
+				.jsonPath("$.paths['/users/{userId}/subscriptions'].post.requestBody.content['application/json'].schema").exists()
+				.jsonPath("$.paths['/users/{userId}/subscriptions'].post.responses['200'].content['application/json'].schema").exists()
+				.jsonPath("$.paths['/users/{userId}/subscriptions'].post.parameters[?(@.name == 'API-Version')]").isNotEmpty()
+				.jsonPath("$.paths['/users/{userId}/subscriptions/{subscriptionId}'].get.responses['404']").exists()
+				.jsonPath("$.components.schemas.ProductRefRequest.discriminator.mapping.S2").exists()
+				.jsonPath("$.components.schemas.ProductRefResponse.oneOf.length()").isEqualTo(2)
+				.jsonPath("$.components.schemas.S1Request.allOf[*]['$ref']").isEmpty()
+				.jsonPath("$.components.schemas.S2Request.allOf[*]['$ref']").isEmpty()
+				.jsonPath("$.components.schemas.S1Response.allOf[*]['$ref']").isEmpty()
+				.jsonPath("$.components.schemas.S2Response.allOf[*]['$ref']").isEmpty();
+		http.get().uri("/openapi/downstream.json").exchange().expectStatus().isOk().expectBody()
+				.jsonPath("$.paths['/s2/subscribe'].post.requestBody").exists()
+				.jsonPath("$.components.schemas.S2Result.oneOf.length()").isEqualTo(2);
 	}
-
 }

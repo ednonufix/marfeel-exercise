@@ -1,0 +1,629 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Subscription Registry – outgoing HTTP calls",
+    "version": "1.0"
+  },
+  "paths": {
+    "/a1/token": {
+      "servers": [
+        {
+          "url": "http://localhost:8081"
+        }
+      ],
+      "post": {
+        "summary": "Issue a token for S1",
+        "tags": [
+          "A1"
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Provider response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Token"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/s1/products": {
+      "servers": [
+        {
+          "url": "http://localhost:8082"
+        }
+      ],
+      "get": {
+        "summary": "Read the S1 catalog",
+        "tags": [
+          "S1"
+        ],
+        "security": [
+          {
+            "a1Bearer": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Provider response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Products"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid provider credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/s2/items": {
+      "servers": [
+        {
+          "url": "http://localhost:8083"
+        }
+      ],
+      "get": {
+        "summary": "Read the S2 catalog",
+        "tags": [
+          "S2"
+        ],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Provider response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Items"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid provider credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/s1/subscribe": {
+      "servers": [
+        {
+          "url": "http://localhost:8082"
+        }
+      ],
+      "post": {
+        "summary": "Subscribe an account to one product",
+        "tags": [
+          "S1"
+        ],
+        "security": [
+          {
+            "a1Bearer": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Provider response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/S1Result"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed JSON",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid provider credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Invalid subscription",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Provider failure",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/S1Request"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/s2/subscribe": {
+      "servers": [
+        {
+          "url": "http://localhost:8083"
+        }
+      ],
+      "post": {
+        "summary": "Subscribe a user to one item; inspect status even on HTTP 200",
+        "tags": [
+          "S2"
+        ],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Provider response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/S2Result"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed JSON",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid provider credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/S2Request"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/s3/metrics": {
+      "servers": [
+        {
+          "url": "http://localhost:8084"
+        }
+      ],
+      "get": {
+        "summary": "Read metrics for one product",
+        "tags": [
+          "S3"
+        ],
+        "security": [
+          {
+            "metricsBearer": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Provider response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Metrics"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid provider credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown product",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "in": "query",
+            "name": "service",
+            "required": true,
+            "description": "Provider of the product",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "S1",
+                "S2"
+              ]
+            }
+          },
+          {
+            "in": "query",
+            "name": "code",
+            "required": false,
+            "description": "Required for S1",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "subcode",
+            "required": false,
+            "description": "Required for S1",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "itemId",
+            "required": false,
+            "description": "Required for S2",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "a1Bearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Token issued by A1"
+      },
+      "apiKey": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-Api-Key"
+      },
+      "metricsBearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Static S3 token"
+      }
+    },
+    "schemas": {
+      "Product": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "S1-A"
+          },
+          "subcode": {
+            "type": "string",
+            "example": "X1"
+          }
+        },
+        "required": [
+          "code",
+          "subcode"
+        ]
+      },
+      "Item": {
+        "type": "object",
+        "properties": {
+          "itemId": {
+            "type": "string",
+            "example": "S2-100"
+          }
+        },
+        "required": [
+          "itemId"
+        ]
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "error"
+        ]
+      },
+      "Token": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string"
+          },
+          "expires_in": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "token",
+          "expires_in"
+        ]
+      },
+      "Products": {
+        "type": "object",
+        "properties": {
+          "products": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "product": {
+                  "$ref": "#/components/schemas/Product"
+                }
+              },
+              "required": [
+                "product"
+              ]
+            }
+          }
+        },
+        "required": [
+          "products"
+        ]
+      },
+      "Items": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "item": {
+                  "$ref": "#/components/schemas/Item"
+                }
+              },
+              "required": [
+                "item"
+              ]
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "S1Request": {
+        "type": "object",
+        "properties": {
+          "account": {
+            "type": "object",
+            "properties": {
+              "ref": {
+                "type": "string",
+                "example": "U1"
+              }
+            },
+            "required": [
+              "ref"
+            ]
+          },
+          "product": {
+            "$ref": "#/components/schemas/Product"
+          }
+        },
+        "required": [
+          "account",
+          "product"
+        ]
+      },
+      "S2Request": {
+        "type": "object",
+        "properties": {
+          "user": {
+            "type": "string",
+            "example": "U2"
+          },
+          "item": {
+            "$ref": "#/components/schemas/Item"
+          }
+        },
+        "required": [
+          "user",
+          "item"
+        ]
+      },
+      "S1Result": {
+        "type": "object",
+        "properties": {
+          "subscriptionId": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "ACTIVE"
+            ]
+          }
+        },
+        "required": [
+          "subscriptionId",
+          "state"
+        ]
+      },
+      "S2Result": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "status": {
+                "type": "string",
+                "enum": [
+                  "OK"
+                ]
+              },
+              "subscriptionId": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "status",
+              "subscriptionId"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "status": {
+                "type": "string",
+                "enum": [
+                  "ERROR"
+                ]
+              },
+              "reason": {
+                "type": "string",
+                "example": "user not eligible"
+              }
+            },
+            "required": [
+              "status",
+              "reason"
+            ]
+          }
+        ]
+      },
+      "Metrics": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "service": {
+                "type": "string",
+                "enum": [
+                  "S1"
+                ]
+              },
+              "code": {
+                "type": "string",
+                "example": "S1-A"
+              },
+              "subcode": {
+                "type": "string",
+                "example": "X1"
+              },
+              "subscribers": {
+                "type": "integer"
+              },
+              "iban": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "service",
+              "code",
+              "subcode",
+              "subscribers",
+              "iban"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "service": {
+                "type": "string",
+                "enum": [
+                  "S2"
+                ]
+              },
+              "itemId": {
+                "type": "string",
+                "example": "S2-100"
+              },
+              "subscribers": {
+                "type": "integer"
+              },
+              "iban": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "service",
+              "itemId",
+              "subscribers",
+              "iban"
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

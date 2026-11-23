@@ -3,5 +3,6 @@ package com.marfeel.exercise.domain.vo;
 public enum SubscriptionStatus {
 	SUCCESS,
 	FAILED,
-	ALREADY_SUBSCRIBED
+	ALREADY_SUBSCRIBED,
+	IN_PROGRESS
 }

@@ -1,4 +1,4 @@
-package com.marfeel.exercise.infrastructure.adapter.rest.output.persistence.entity;
+package com.marfeel.exercise.infrastructure.adapter.persistence.entity;
 
 import com.marfeel.exercise.domain.model.ProductRef;
 import com.marfeel.exercise.domain.model.S1Product;

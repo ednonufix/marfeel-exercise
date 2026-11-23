@@ -39,7 +39,7 @@ import static org.assertj.core.api.Assertions.assertThat;
                           ReactiveHttpServiceClientAutoConfiguration.class})
 @EnableWireMock(@ConfigureWireMock(baseUrlProperties = {
 		"endpoint.a1.url", "endpoint.s1.url", "endpoint.s2.url", "endpoint.s3.url"}))
-class WebClientIntegrationTests {
+class WebClientHttpConfigurationIntegrationTests {
 
 	private static final Duration TIMEOUT = Duration.ofSeconds(10);
 	private static final String TOKEN_PATH = "/a1/token";

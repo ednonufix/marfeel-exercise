@@ -2,7 +2,10 @@ package com.marfeel.exercise.application.service;
 
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.List;
 
+import com.marfeel.exercise.application.ports.output.ProductMetricsClient;
+import com.marfeel.exercise.domain.model.ProductCatalog;
 import com.marfeel.exercise.domain.model.ProductDetail;
 import com.marfeel.exercise.domain.model.ProductRef;
 import com.marfeel.exercise.domain.model.S1Product;
@@ -15,6 +18,8 @@ import reactor.test.StepVerifier;
 import reactor.test.publisher.TestPublisher;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 class ProductCatalogServiceTests {
 
@@ -48,5 +53,19 @@ class ProductCatalogServiceTests {
 				})
 				.expectComplete()
 				.verify(Duration.ofSeconds(5));
+	}
+
+	@Test
+	void returnsAnEmptyCatalogWithoutRequestingMetricsWhenEverythingIsSubscribed() {
+		var product = new S2Product("S2", "item-7");
+		var metrics = mock(ProductMetricsClient.class);
+		var service = new ProductCatalogService(() -> Flux.just(product),
+				new FilterUnsubscribedProductsService(user -> Flux.just(product)), metrics);
+
+		service.allProducts(UserType.U2).as(StepVerifier::create)
+				.expectNext(new ProductCatalog(UserType.U2, List.of()))
+				.expectComplete().verify(Duration.ofSeconds(5));
+
+		verifyNoInteractions(metrics);
 	}
 }
