@@ -9,6 +9,7 @@ permissions:
   contents: read
   actions: read
   checks: write
+  pull-requests: write
 jobs:
   marfeel-exercise:
     runs-on: ubuntu-latest
@@ -21,23 +22,29 @@ jobs:
           distribution: 'liberica'
           java-version: '21.0.6'
           java-package: 'jdk'
-      - name: Test Step
-        run: ./mvnw test
+      - name: Build, test and verify coverage
+        run: ./mvnw -B verify
       - name: Test Report
         uses: dorny/test-reporter@v2.1.1
-        if: success() || failure()
+        if: >-
+          ${{ !cancelled() && hashFiles('target/surefire-reports/TEST-*.xml') != '' &&
+              (github.event_name != 'pull_request' ||
+               (github.event.pull_request.head.repo.full_name == github.repository &&
+                github.event.pull_request.user.login != 'dependabot[bot]')) }}
         with:
           name: junit Report
-          path: '**/target/test-results/**/TEST-*.xml'
+          path: 'target/surefire-reports/TEST-*.xml'
           reporter: java-junit
       - name: JaCoCo Report
+        if: ${{ !cancelled() && hashFiles('target/site/jacoco/jacoco.xml') != '' }}
         uses: madrapps/jacoco-report@v1.7.2
         with:
           paths: ${{ github.workspace }}/target/site/jacoco/jacoco.xml
           token: ${{ secrets.GITHUB_TOKEN }}
           title: Code Coverage
+          min-coverage-overall: 90
+          comment-type: >-
+            ${{ github.event_name == 'pull_request' &&
+                github.event.pull_request.head.repo.full_name == github.repository &&
+                github.event.pull_request.user.login != 'dependabot[bot]' && 'both' || 'summary' }}
           update-comment: true
-      - name: Get the Coverage info
-        run: |
-          echo "Total coverage ${{ steps.jacoco.outputs.coverage-overall }}"
-          echo "Changed Files coverage ${{ steps.jacoco.outputs.coverage-changed-files }}"
