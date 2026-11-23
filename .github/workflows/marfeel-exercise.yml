@@ -1,0 +1,43 @@
+name: Marfeel Exercise
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+permissions:
+  contents: read
+  actions: read
+  checks: write
+jobs:
+  alphabrokers-retarifier:
+    runs-on: puzl-ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v5
+      - name: Set up Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'liberica'
+          java-version: '21.0.6'
+          java-package: 'jdk'
+      - name: Test Step
+        run: ./mvnw test
+      - name: Test Report
+        uses: dorny/test-reporter@v2.1.1
+        if: success() || failure()
+        with:
+          name: junit Report
+          path: '**/target/test-results/**/TEST-*.xml'
+          reporter: java-junit
+      - name: JaCoCo Report
+        uses: madrapps/jacoco-report@v1.7.2
+        with:
+          paths: ${{ github.workspace }}/target/site/jacoco/jacoco.xml
+          token: ${{ secrets.GITHUB_TOKEN }}
+          title: Code Coverage
+          update-comment: true
+      - name: Get the Coverage info
+        run: |
+          echo "Total coverage ${{ steps.jacoco.outputs.coverage-overall }}"
+          echo "Changed Files coverage ${{ steps.jacoco.outputs.coverage-changed-files }}"
