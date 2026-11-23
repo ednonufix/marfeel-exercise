@@ -20,7 +20,8 @@ jobs:
         uses: actions/setup-java@v5
         with:
           distribution: 'liberica'
-          java-version: '21.0.6'
+          java-version: '21'
+          check-latest: true
           java-package: 'jdk'
       - name: Build, test and verify coverage
         run: ./mvnw -B verify
