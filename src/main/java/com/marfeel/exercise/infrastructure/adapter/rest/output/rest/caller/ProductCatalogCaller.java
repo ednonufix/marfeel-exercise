@@ -2,9 +2,12 @@ package com.marfeel.exercise.infrastructure.adapter.rest.output.rest.caller;
 
 import com.marfeel.exercise.application.ports.output.ProductCatalogClient;
 import com.marfeel.exercise.domain.model.ProductRef;
-import lombok.RequiredArgsConstructor;
+
 import org.springframework.stereotype.Component;
+
 import reactor.core.publisher.Flux;
+
+import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @Component

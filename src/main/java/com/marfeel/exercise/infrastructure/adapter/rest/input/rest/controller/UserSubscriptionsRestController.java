@@ -11,14 +11,16 @@ import com.marfeel.exercise.infrastructure.adapter.rest.input.rest.response.Prod
 import com.marfeel.exercise.infrastructure.adapter.rest.input.rest.response.UserSubscriptionsResponse;
 import com.marfeel.exercise.infrastructure.adapter.rest.input.rest.ui.UserSubscriptionsRestUI;
 
-import java.util.List;
-
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
+
+import java.util.List;
+
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @RestController
@@ -36,14 +38,14 @@ public class UserSubscriptionsRestController implements UserSubscriptionsRestUI 
 	@Override
 	public Mono<UserSubscriptionsResponse.Active> getSubscription(UserType userId, long subscriptionId) {
 		return userSubscriptionsUseCase.getSubscription(userId, subscriptionId)
-				.map(mapper::fromDomain)
-				.switchIfEmpty(Mono.error(() -> new ResponseStatusException(HttpStatus.NOT_FOUND)));
+			.map(mapper::fromDomain)
+			.switchIfEmpty(Mono.error(() -> new ResponseStatusException(HttpStatus.NOT_FOUND)));
 	}
 
 	@Override
 	public Mono<List<UserSubscriptionsResponse.Active>> unsubscribe(UserType userId, long subscriptionId) {
 		return userSubscriptionsUseCase.unsubscribe(userId, subscriptionId)
-				.map(subscriptions -> subscriptions.stream().map(mapper::fromDomain).toList());
+			.map(subscriptions -> subscriptions.stream().map(mapper::fromDomain).toList());
 	}
 
 	@Override

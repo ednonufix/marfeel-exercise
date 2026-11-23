@@ -21,6 +21,7 @@ import com.marfeel.exercise.infrastructure.adapter.rest.input.rest.response.Prod
 import com.marfeel.exercise.infrastructure.adapter.rest.input.rest.response.S1Response;
 import com.marfeel.exercise.infrastructure.adapter.rest.input.rest.response.S2Response;
 import com.marfeel.exercise.infrastructure.adapter.rest.input.rest.response.UserSubscriptionsResponse;
+
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingConstants;
 import org.mapstruct.ReportingPolicy;

@@ -1,8 +1,8 @@
 package com.marfeel.exercise.application.dto;
 
-import java.time.LocalDateTime;
-
 import com.marfeel.exercise.domain.model.ProductRef;
+
+import java.time.LocalDateTime;
 
 public record Subscription(Long id, ProductRef ref, String providerSubscriptionId, LocalDateTime subscribedAt) {
 }

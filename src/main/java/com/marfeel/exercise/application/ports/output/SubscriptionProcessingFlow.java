@@ -1,9 +1,9 @@
 package com.marfeel.exercise.application.ports.output;
 
-import java.util.Optional;
-
 import com.marfeel.exercise.domain.model.ProductRef;
 import com.marfeel.exercise.domain.vo.UserType;
+
+import java.util.Optional;
 
 public interface SubscriptionProcessingFlow {
 

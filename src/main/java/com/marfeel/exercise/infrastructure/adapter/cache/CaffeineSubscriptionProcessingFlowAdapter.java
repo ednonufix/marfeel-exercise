@@ -1,16 +1,17 @@
 package com.marfeel.exercise.infrastructure.adapter.cache;
 
-import java.util.Objects;
-import java.util.Optional;
-import java.util.concurrent.ConcurrentMap;
-
 import com.marfeel.exercise.application.ports.output.SubscriptionProcessingFlow;
 import com.marfeel.exercise.domain.model.ProductRef;
 import com.marfeel.exercise.domain.vo.UserType;
+
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.caffeine.CaffeineCache;
 import org.springframework.cache.caffeine.CaffeineCacheManager;
 import org.springframework.stereotype.Component;
+
+import java.util.Objects;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentMap;
 
 @Component
 public class CaffeineSubscriptionProcessingFlowAdapter implements SubscriptionProcessingFlow {

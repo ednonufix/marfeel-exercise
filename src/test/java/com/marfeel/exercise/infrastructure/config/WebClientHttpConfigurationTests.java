@@ -1,13 +1,9 @@
 package com.marfeel.exercise.infrastructure.config;
 
-import java.time.Duration;
-import java.util.concurrent.atomic.AtomicReference;
-
 import com.marfeel.exercise.infrastructure.adapter.rest.output.rest.client.A1Client;
 import com.marfeel.exercise.infrastructure.adapter.rest.output.token.Token;
 import com.marfeel.exercise.infrastructure.adapter.rest.output.token.TokenResponse;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.web.reactive.function.client.ClientRequest;
 import org.springframework.web.reactive.function.client.ClientResponse;
@@ -15,9 +11,14 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.support.WebClientHttpServiceGroupConfigurer;
 import org.springframework.web.service.registry.HttpServiceGroupConfigurer.ClientCallback;
 import org.springframework.web.service.registry.HttpServiceGroupConfigurer.Groups;
+
+import java.time.Duration;
+import java.util.concurrent.atomic.AtomicReference;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
@@ -72,7 +73,7 @@ class WebClientHttpConfigurationTests {
 
 		verifyNoInteractions(client);
 		provider.getToken().concatWith(provider.getToken()).map(Token::token).as(StepVerifier::create)
-				.expectNext("session-token", "session-token").expectComplete().verify(TIMEOUT);
+			.expectNext("session-token", "session-token").expectComplete().verify(TIMEOUT);
 		then(client).should().fetchToken();
 	}
 
@@ -89,10 +90,10 @@ class WebClientHttpConfigurationTests {
 		configurer.configureGroups(groups);
 		var sent = new AtomicReference<ClientRequest>();
 		builder.exchangeFunction(request -> {
-					sent.set(request);
-					return Mono.just(ClientResponse.create(HttpStatus.NO_CONTENT).build());
-				}).build().get().uri("/probe").retrieve().toBodilessEntity().as(StepVerifier::create)
-				.expectNextCount(1).expectComplete().verify(TIMEOUT);
+			sent.set(request);
+			return Mono.just(ClientResponse.create(HttpStatus.NO_CONTENT).build());
+		}).build().get().uri("/probe").retrieve().toBodilessEntity().as(StepVerifier::create)
+			.expectNextCount(1).expectComplete().verify(TIMEOUT);
 		return sent.get();
 	}
 }

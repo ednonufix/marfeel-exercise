@@ -1,5 +1,11 @@
 package com.marfeel.exercise.infrastructure.config;
 
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.reactive.config.ApiVersionConfigurer;
+import org.springframework.web.reactive.config.WebFluxConfigurer;
+import org.springframework.web.util.pattern.PathPatternParser;
+
 import java.util.Arrays;
 import java.util.List;
 
@@ -12,22 +18,17 @@ import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import io.swagger.v3.oas.models.parameters.HeaderParameter;
 import org.springdoc.core.customizers.OpenApiCustomizer;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.web.reactive.config.ApiVersionConfigurer;
-import org.springframework.web.reactive.config.WebFluxConfigurer;
-import org.springframework.web.util.pattern.PathPatternParser;
 
 @Configuration(proxyBeanMethods = false)
 @OpenAPIDefinition(info = @Info(title = "Subscription Registry", version = "v1",
-		description = "Manage a user's product subscriptions and inspect provider outcomes."),
-		security = @SecurityRequirement(name = "registryBasic"))
+	description = "Manage a user's product subscriptions and inspect provider outcomes."),
+	security = @SecurityRequirement(name = "registryBasic"))
 @SecurityScheme(name = "registryBasic", type = SecuritySchemeType.HTTP, scheme = "basic")
 public class RegistryOpenApiConfiguration implements WebFluxConfigurer {
 
 	static String[] documentationPaths() {
 		return new String[]{"/swagger-ui.html", "/swagger-ui/**", "/webjars/swagger-ui/**",
-		                    "/v3/api-docs", "/v3/api-docs/**", "/v3/api-docs.yaml", "/openapi/downstream.json"};
+			"/v3/api-docs", "/v3/api-docs/**", "/v3/api-docs.yaml", "/openapi/downstream.json"};
 	}
 
 	@Override
@@ -47,7 +48,7 @@ public class RegistryOpenApiConfiguration implements WebFluxConfigurer {
 				operation.getParameters().removeIf(parameter -> "API-Version".equalsIgnoreCase(parameter.getName()));
 			}
 			operation.addParametersItem(new HeaderParameter().name("API-Version").required(true)
-					.description("Registry API version").schema(new StringSchema()._enum(List.of("v1"))._default("v1")));
+				.description("Registry API version").schema(new StringSchema()._enum(List.of("v1"))._default("v1")));
 		}));
 	}
 

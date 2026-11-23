@@ -7,9 +7,12 @@ import com.marfeel.exercise.domain.model.S1Product;
 import com.marfeel.exercise.domain.model.S2Product;
 import com.marfeel.exercise.infrastructure.adapter.rest.output.rest.client.S3Client;
 import com.marfeel.exercise.infrastructure.adapter.rest.output.rest.mapper.CatalogCallerMapper;
-import lombok.RequiredArgsConstructor;
+
 import org.springframework.stereotype.Component;
+
 import reactor.core.publisher.Mono;
+
+import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @Component

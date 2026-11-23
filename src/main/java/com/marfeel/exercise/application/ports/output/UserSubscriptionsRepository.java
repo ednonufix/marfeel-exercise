@@ -5,6 +5,7 @@ import com.marfeel.exercise.application.dto.CriteriaFilter;
 import com.marfeel.exercise.application.dto.Subscription;
 import com.marfeel.exercise.domain.vo.SubscriptionStatus;
 import com.marfeel.exercise.domain.vo.UserType;
+
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 

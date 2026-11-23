@@ -13,23 +13,25 @@ import com.marfeel.exercise.infrastructure.adapter.persistence.entity.Subscripti
 import com.marfeel.exercise.infrastructure.adapter.persistence.entity.SubscriptionEntity;
 import com.marfeel.exercise.infrastructure.adapter.persistence.entity.SubscriptionKey;
 import com.marfeel.exercise.infrastructure.adapter.persistence.mapper.SubscriptionPersistenceMapper;
-import lombok.RequiredArgsConstructor;
+
 import org.springframework.data.domain.Sort;
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
 import org.springframework.data.relational.core.query.Criteria;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
+import static org.springframework.data.relational.core.query.Criteria.where;
+import static org.springframework.data.relational.core.query.Query.query;
+
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import static org.springframework.data.relational.core.query.Criteria.where;
-import static org.springframework.data.relational.core.query.Query.query;
+import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @Repository
 public class ProductSubscriptionAdapter implements ProductSubscriptionRepository,
-                                                   UserSubscriptionsRepository {
+	UserSubscriptionsRepository {
 
 	private final R2dbcEntityTemplate entityTemplate;
 	private final SubscriptionPersistenceMapper mapper;
@@ -55,18 +57,18 @@ public class ProductSubscriptionAdapter implements ProductSubscriptionRepository
 	@Override
 	public Flux<Subscription> findActiveSubscriptions(UserType userType, CriteriaFilter filter) {
 		return entityTemplate.select(SubscriptionEntity.class)
-				.matching(query(buildActiveSubscriptionCriteria(userType, filter))
-						.sort(Sort.by(Sort.Direction.DESC, "subscribedAt", "id")))
-				.all()
-				.map(mapper::toSubscription);
+			.matching(query(buildActiveSubscriptionCriteria(userType, filter))
+				.sort(Sort.by(Sort.Direction.DESC, "subscribedAt", "id")))
+			.all()
+			.map(mapper::toSubscription);
 	}
 
 	@Override
 	public Mono<Subscription> findActiveSubscription(UserType userType, long subscriptionId) {
 		return entityTemplate.select(SubscriptionEntity.class)
-				.matching(query(where("id").is(subscriptionId).and("userId").is(userType.name())))
-				.one()
-				.map(mapper::toSubscription);
+			.matching(query(where("id").is(subscriptionId).and("userId").is(userType.name())))
+			.one()
+			.map(mapper::toSubscription);
 	}
 
 	@Override
@@ -86,9 +88,9 @@ public class ProductSubscriptionAdapter implements ProductSubscriptionRepository
 			criteria = criteria.and("service").is(service);
 		}
 		return entityTemplate.select(SubscriptionAttemptEntity.class)
-				.matching(query(criteria).sort(Sort.by(Sort.Direction.DESC, "attemptedAt", "id")))
-				.all()
-				.map(mapper::toAttempt);
+			.matching(query(criteria).sort(Sort.by(Sort.Direction.DESC, "attemptedAt", "id")))
+			.all()
+			.map(mapper::toAttempt);
 	}
 
 	private static Criteria buildActiveSubscriptionCriteria(UserType userType, CriteriaFilter filter) {

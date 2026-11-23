@@ -6,10 +6,13 @@ import com.marfeel.exercise.application.ports.output.ProductCatalogClient;
 import com.marfeel.exercise.application.ports.output.ProductMetricsClient;
 import com.marfeel.exercise.domain.model.ProductCatalog;
 import com.marfeel.exercise.domain.vo.UserType;
-import lombok.RequiredArgsConstructor;
+
 import org.springframework.stereotype.Service;
+
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @Service
@@ -22,8 +25,8 @@ public class ProductCatalogService implements ProductCatalogUseCase {
 	@Override
 	public Mono<ProductCatalog> allProducts(UserType userType) {
 		return unsubscribedProducts.filter(userType, Flux.defer(catalogClient::allProducts))
-				.flatMap(metricsClient::getMetrics)
-				.collectList()
-				.map(products -> new ProductCatalog(userType, products));
+			.flatMap(metricsClient::getMetrics)
+			.collectList()
+			.map(products -> new ProductCatalog(userType, products));
 	}
 }

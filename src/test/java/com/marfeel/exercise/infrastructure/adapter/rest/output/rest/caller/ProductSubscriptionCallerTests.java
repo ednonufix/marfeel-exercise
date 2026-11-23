@@ -1,7 +1,5 @@
 package com.marfeel.exercise.infrastructure.adapter.rest.output.rest.caller;
 
-import java.time.Duration;
-
 import com.marfeel.exercise.application.dto.ProviderSubscriptionResult;
 import com.marfeel.exercise.domain.model.S1Product;
 import com.marfeel.exercise.domain.model.S2Product;
@@ -14,6 +12,9 @@ import com.marfeel.exercise.infrastructure.adapter.rest.output.rest.dto.S2Subscr
 import com.marfeel.exercise.infrastructure.adapter.rest.output.rest.dto.S2SubscribeResponse;
 import com.marfeel.exercise.infrastructure.adapter.rest.output.rest.mapper.ProviderSubscriptionRequestMapper;
 import com.marfeel.exercise.infrastructure.adapter.rest.output.rest.mapper.ProviderSubscriptionResponseMapper;
+
+import java.time.Duration;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,7 +23,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
-
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verifyNoInteractions;
 
@@ -37,8 +37,8 @@ class ProductSubscriptionCallerTests {
 	@BeforeEach
 	void setUp() {
 		caller = new ProductSubscriptionCaller(s1, s2,
-				Mappers.getMapper(ProviderSubscriptionRequestMapper.class),
-				Mappers.getMapper(ProviderSubscriptionResponseMapper.class));
+			Mappers.getMapper(ProviderSubscriptionRequestMapper.class),
+			Mappers.getMapper(ProviderSubscriptionResponseMapper.class));
 	}
 
 	@Test
@@ -47,7 +47,7 @@ class ProductSubscriptionCallerTests {
 		given(s1.subscribe(request)).willReturn(Mono.just(new S1SubscribeResponse("confirmation", "ACTIVE")));
 
 		caller.subscribe(UserType.U2, new S1Product("S1", "A", "X2")).as(StepVerifier::create)
-				.expectNext(new ProviderSubscriptionResult("confirmation", null)).expectComplete().verify(TIMEOUT);
+			.expectNext(new ProviderSubscriptionResult("confirmation", null)).expectComplete().verify(TIMEOUT);
 
 		verifyNoInteractions(s2);
 	}
@@ -58,7 +58,7 @@ class ProductSubscriptionCallerTests {
 		given(s2.subscribe(request)).willReturn(Mono.just(new S2SubscribeResponse(null, "FAILED", "not eligible")));
 
 		caller.subscribe(UserType.U3, new S2Product("S2", "item-7")).as(StepVerifier::create)
-				.expectNext(new ProviderSubscriptionResult(null, "not eligible")).expectComplete().verify(TIMEOUT);
+			.expectNext(new ProviderSubscriptionResult(null, "not eligible")).expectComplete().verify(TIMEOUT);
 
 		verifyNoInteractions(s1);
 	}
@@ -69,7 +69,7 @@ class ProductSubscriptionCallerTests {
 		given(s2.subscribe(request)).willReturn(Mono.just(new S2SubscribeResponse(null, "FAILED", " ")));
 
 		caller.subscribe(UserType.U3, new S2Product("S2", "item-7")).as(StepVerifier::create)
-				.expectNext(new ProviderSubscriptionResult(null, "S2 rejected the subscription"))
-				.expectComplete().verify(TIMEOUT);
+			.expectNext(new ProviderSubscriptionResult(null, "S2 rejected the subscription"))
+			.expectComplete().verify(TIMEOUT);
 	}
 }

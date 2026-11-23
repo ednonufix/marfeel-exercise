@@ -1,66 +1,55 @@
 package com.marfeel.exercise.application.service;
 
-import com.marfeel.exercise.application.dto.ProviderSubscriptionResult;
-import com.marfeel.exercise.application.dto.SaveSubscriptionCommand;
 import com.marfeel.exercise.application.dto.SubscriptionBatchResult;
 import com.marfeel.exercise.application.dto.SubscriptionBatchResult.Result;
 import com.marfeel.exercise.application.mapper.SaveSubscriptionCommandMapper;
-import com.marfeel.exercise.application.ports.input.FilterUnsubscribedProductsUseCase;
 import com.marfeel.exercise.application.ports.input.ProductSubscriptionUseCase;
-import com.marfeel.exercise.application.ports.output.ProductSubscriptionClient;
 import com.marfeel.exercise.application.ports.output.ProductSubscriptionRepository;
+import com.marfeel.exercise.application.ports.output.SubscriptionProcessingFlow;
+import com.marfeel.exercise.application.subscription.SubscriptionAttempt;
 import com.marfeel.exercise.domain.model.ProductRef;
+import com.marfeel.exercise.domain.vo.SubscriptionStatus;
 import com.marfeel.exercise.domain.vo.UserType;
 
-import java.util.Optional;
-import java.util.stream.Collectors;
-
-import lombok.RequiredArgsConstructor;
-import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Service;
+
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.core.publisher.Signal;
+
+import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @Service
 public class ProductSubscriptionService implements ProductSubscriptionUseCase {
 
-	private final FilterUnsubscribedProductsUseCase unsubscribedProducts;
-	private final ProductSubscriptionClient subscriptionClient;
+	private final SubscriptionProcessingFlow processing;
 	private final ProductSubscriptionRepository subscriptionRepository;
 	private final SaveSubscriptionCommandMapper subscriptionCommandMapper;
+	private final SubscriptionAttempt subscriptionAttempt;
 
 	@Override
 	public Mono<SubscriptionBatchResult> subscribe(UserType userType, Flux<ProductRef> products) {
-		return unsubscribedProducts.filter(userType, products).collect(Collectors.toSet())
-				.flatMapMany(available -> products.distinct()
-						.concatMap(product -> available.contains(product)
-						                      ? subscribe(userType, product)
-						                      : Mono.fromSupplier(() -> subscriptionCommandMapper.toAlreadySubscribed(product))))
-				.collectList()
-				.map(SubscriptionBatchResult::new);
+		return products.distinct()
+			.flatMap(product -> reserveAndSubscribe(userType, product))
+			.collectList()
+			.map(SubscriptionBatchResult::new);
 	}
 
-	private Mono<Result> subscribe(UserType userType, ProductRef product) {
-		return Mono.defer(() -> subscriptionClient.subscribe(userType, product)).materialize()
-				.map(outcome -> toCommand(userType, product, outcome))
-				.flatMap(this::save);
+	private Mono<Result> reserveAndSubscribe(UserType userType, ProductRef product) {
+		return Mono.defer(() -> {
+			var reservation = processing.tryAcquire(userType, product);
+			return reservation.map(value -> subscribeIfInactive(userType, product).doOnTerminate(value::release))
+				.orElseGet(() -> Mono.just(subscriptionCommandMapper.existing(product, SubscriptionStatus.IN_PROGRESS)));
+		});
 	}
 
-	private SaveSubscriptionCommand toCommand(UserType userType, ProductRef product,
-			Signal<ProviderSubscriptionResult> outcome) {
-		var result = Optional.ofNullable(outcome.get());
-		var error = outcome.getThrowable();
-		return result.map(ProviderSubscriptionResult::subscriptionId)
-				.map(subscriptionId -> subscriptionCommandMapper.toSuccess(userType, product, subscriptionId))
-				.orElseGet(() -> subscriptionCommandMapper.toFailure(userType, product,
-						result.map(ProviderSubscriptionResult::message)
-								.orElseGet(() -> error != null ? error.getMessage() : "Not provided error message")));
+	private Mono<Result> subscribeIfInactive(UserType userType, ProductRef product) {
+		return Mono.defer(() -> subscriptionRepository.isActive(userType, product))
+			.flatMap(active -> {
+				if (active) {
+					return Mono.just(subscriptionCommandMapper.existing(product, SubscriptionStatus.ALREADY_SUBSCRIBED));
+				}
+				return subscriptionAttempt.execute(userType, product);
+			});
 	}
-
-	private @NonNull Mono<Result> save(SaveSubscriptionCommand command) {
-		return subscriptionRepository.save(command).thenReturn(subscriptionCommandMapper.toResult(command));
-	}
-
 }

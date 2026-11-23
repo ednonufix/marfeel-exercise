@@ -1,14 +1,15 @@
 package com.marfeel.exercise.infrastructure.adapter.cache;
 
+import com.marfeel.exercise.domain.model.S2Product;
+import com.marfeel.exercise.domain.vo.UserType;
+
+import org.springframework.cache.caffeine.CaffeineCacheManager;
+
 import java.time.Duration;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
-import com.marfeel.exercise.domain.model.S2Product;
-import com.marfeel.exercise.domain.vo.UserType;
 import org.junit.jupiter.api.Test;
-import org.springframework.cache.caffeine.CaffeineCacheManager;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
 class CaffeineSubscriptionProcessingFlowAdapterTests {

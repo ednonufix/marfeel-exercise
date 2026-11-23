@@ -1,17 +1,17 @@
 package com.marfeel.exercise.application.service;
 
-import java.time.Duration;
-
 import com.marfeel.exercise.application.ports.output.ProductCatalogRepository;
 import com.marfeel.exercise.domain.model.ProductRef;
 import com.marfeel.exercise.domain.model.S1Product;
 import com.marfeel.exercise.domain.model.S2Product;
 import com.marfeel.exercise.domain.vo.UserType;
+
+import java.time.Duration;
+
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
 import reactor.test.publisher.PublisherProbe;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
@@ -29,8 +29,8 @@ class FilterUnsubscribedProductsServiceTests {
 		var service = new FilterUnsubscribedProductsService(repository);
 
 		service.filter(UserType.U2, Flux.just(active, otherSubcode, otherProvider, active))
-				.as(StepVerifier::create).expectNext(otherSubcode, otherProvider)
-				.expectComplete().verify(Duration.ofSeconds(5));
+			.as(StepVerifier::create).expectNext(otherSubcode, otherProvider)
+			.expectComplete().verify(Duration.ofSeconds(5));
 
 		then(repository).should().findActiveProductRefs(UserType.U2);
 	}
@@ -42,8 +42,8 @@ class FilterUnsubscribedProductsServiceTests {
 		var catalog = PublisherProbe.of(Flux.<ProductRef>just(new S2Product("S2", "item")));
 
 		service.filter(UserType.U1, catalog.flux()).as(StepVerifier::create)
-				.expectErrorSatisfies(error -> assertThat(error).isSameAs(failure))
-				.verify(Duration.ofSeconds(5));
+			.expectErrorSatisfies(error -> assertThat(error).isSameAs(failure))
+			.verify(Duration.ofSeconds(5));
 
 		catalog.assertWasNotSubscribed();
 	}

@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Isolated;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
 @Isolated("Reactor virtual time replaces shared schedulers")
@@ -20,13 +19,13 @@ class CachedTokenProviderTests {
 		var calls = new AtomicInteger();
 
 		StepVerifier.withVirtualTime(() -> {
-					var provider = new CachedTokenProvider(Mono.fromSupplier(
-							() -> new TokenResponse("token-" + calls.incrementAndGet(), 120)));
-					return provider.getToken().concatWith(provider.getToken().delaySubscription(Duration.ofSeconds(89)))
-							.concatWith(provider.getToken().delaySubscription(Duration.ofSeconds(2)))
-							.map(Token::token);
-				}).expectNext("token-1").thenAwait(Duration.ofSeconds(89)).expectNext("token-1")
-				.thenAwait(Duration.ofSeconds(2)).expectNext("token-2").expectComplete().verify(TIMEOUT);
+			var provider = new CachedTokenProvider(Mono.fromSupplier(
+				() -> new TokenResponse("token-" + calls.incrementAndGet(), 120)));
+			return provider.getToken().concatWith(provider.getToken().delaySubscription(Duration.ofSeconds(89)))
+				.concatWith(provider.getToken().delaySubscription(Duration.ofSeconds(2)))
+				.map(Token::token);
+		}).expectNext("token-1").thenAwait(Duration.ofSeconds(89)).expectNext("token-1")
+			.thenAwait(Duration.ofSeconds(2)).expectNext("token-2").expectComplete().verify(TIMEOUT);
 
 		assertThat(calls.get()).isEqualTo(2);
 	}
@@ -41,6 +40,6 @@ class CachedTokenProviderTests {
 
 		StepVerifier.create(provider.getToken()).expectErrorMessage("Token endpoint returned an empty response").verify(TIMEOUT);
 		StepVerifier.create(provider.getToken().concatWith(provider.getToken()).map(Token::token))
-				.expectNext("token-2", "token-3").expectComplete().verify(TIMEOUT);
+			.expectNext("token-2", "token-3").expectComplete().verify(TIMEOUT);
 	}
 }

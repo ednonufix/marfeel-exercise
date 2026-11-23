@@ -3,6 +3,7 @@ package com.marfeel.exercise.infrastructure.adapter.rest.output.rest.mapper;
 import com.marfeel.exercise.application.dto.ProviderSubscriptionResult;
 import com.marfeel.exercise.infrastructure.adapter.rest.output.rest.dto.S1SubscribeResponse;
 import com.marfeel.exercise.infrastructure.adapter.rest.output.rest.dto.S2SubscribeResponse;
+
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;
@@ -13,8 +14,8 @@ public interface ProviderSubscriptionResponseMapper {
 
 	default ProviderSubscriptionResult fromS1(S1SubscribeResponse response) {
 		return "ACTIVE".equals(response.state())
-		       ? confirmed(response.subscriptionId())
-		       : rejected("S1 did not confirm the subscription");
+			? confirmed(response.subscriptionId())
+			: rejected("S1 did not confirm the subscription");
 	}
 
 	default ProviderSubscriptionResult fromS2(S2SubscribeResponse response) {

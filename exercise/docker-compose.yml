@@ -1,0 +1,67 @@
+# Mock downstreams + a database for the Subscription Registry exercise.
+#
+# Every published port is configurable via the .env file in this folder
+# (or by exporting the vars before `docker compose up`). Containers always
+# listen on 8080 internally; only the host-side port is remapped.
+#
+#   A1  token service     -> host ${A1_PORT}
+#   S1  slow service       -> host ${S1_PORT}   (calls A1 over the internal network)
+#   S2  fast service       -> host ${S2_PORT}
+#   S3  metrics service    -> host ${S3_PORT}
+#   db  MySQL 8            -> host ${DB_PORT}
+#
+# Start everything:   docker compose up --build
+# Stop & clean:        docker compose down -v
+
+services:
+  a1:
+    build: ./a1
+    environment:
+      PORT: 8080
+      TOKEN_TTL_SECONDS: ${A1_TOKEN_TTL:-300}
+    ports:
+      - "${A1_PORT:-8081}:8080"
+
+  s1:
+    build: ./s1
+    environment:
+      PORT: 8080
+      # S1 reaches A1 over the internal compose network (service name = host).
+      A1_URL: http://a1:8080
+      S1_LATENCY_MS: ${S1_LATENCY_MS:-60000}
+    ports:
+      - "${S1_PORT:-8082}:8080"
+    depends_on:
+      - a1
+
+  s2:
+    build: ./s2
+    environment:
+      PORT: 8080
+      S2_API_KEY: ${S2_API_KEY:-s2-secret-key}
+    ports:
+      - "${S2_PORT:-8083}:8080"
+
+  s3:
+    build: ./s3
+    environment:
+      PORT: 8080
+      S3_TOKEN: ${S3_TOKEN:-s3-static-token}
+      S3_LATENCY_MS: ${S3_LATENCY_MS:-150}
+    ports:
+      - "${S3_PORT:-8084}:8080"
+
+  db:
+    image: mysql:8
+    environment:
+      MYSQL_DATABASE: ${DB_NAME:-registry}
+      MYSQL_USER: ${DB_USER:-registry}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-registry}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root}
+    ports:
+      - "${DB_PORT:-3307}:3306"
+    volumes:
+      - mysqldata:/var/lib/mysql
+
+volumes:
+  mysqldata:

@@ -1,9 +1,5 @@
 package com.marfeel.exercise.application.service;
 
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.util.List;
-
 import com.marfeel.exercise.application.dto.Attempt;
 import com.marfeel.exercise.application.dto.CriteriaFilter;
 import com.marfeel.exercise.application.dto.Subscription;
@@ -17,6 +13,11 @@ import com.marfeel.exercise.domain.model.ProductDetail;
 import com.marfeel.exercise.domain.model.S2Product;
 import com.marfeel.exercise.domain.vo.SubscriptionStatus;
 import com.marfeel.exercise.domain.vo.UserType;
+
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.List;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,7 +29,6 @@ import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import reactor.test.publisher.PublisherProbe;
 import reactor.test.publisher.TestPublisher;
-
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verifyNoInteractions;
 
@@ -51,7 +51,7 @@ class UserSubscriptionsServiceTests {
 	@BeforeEach
 	void setUp() {
 		service = new UserSubscriptionsService(
-				metrics, repository, Mappers.getMapper(SubscriptionMapper.class));
+			metrics, repository, Mappers.getMapper(SubscriptionMapper.class));
 	}
 
 	@Test
@@ -62,8 +62,8 @@ class UserSubscriptionsServiceTests {
 		given(metrics.getMetrics(PRODUCT)).willReturn(Mono.just(METRICS));
 
 		service.getSubscriptions(new SubscriptionListFilter(USER, criteria)).as(StepVerifier::create)
-				.expectNext(new UserSubscriptions(List.of(ENRICHED), List.of(FAILED)))
-				.expectComplete().verify(TIMEOUT);
+			.expectNext(new UserSubscriptions(List.of(ENRICHED), List.of(FAILED)))
+			.expectComplete().verify(TIMEOUT);
 	}
 
 	@Test
@@ -72,7 +72,7 @@ class UserSubscriptionsServiceTests {
 		given(metrics.getMetrics(PRODUCT)).willReturn(Mono.just(METRICS));
 
 		service.getSubscription(USER, 7L).as(StepVerifier::create)
-				.expectNext(ENRICHED).expectComplete().verify(TIMEOUT);
+			.expectNext(ENRICHED).expectComplete().verify(TIMEOUT);
 	}
 
 	@Test
@@ -93,9 +93,9 @@ class UserSubscriptionsServiceTests {
 		given(metrics.getMetrics(PRODUCT)).willReturn(Mono.just(METRICS));
 
 		service.unsubscribe(USER, 42L).as(StepVerifier::create)
-				.then(remaining::assertWasNotSubscribed)
-				.then(deletion::complete)
-				.expectNext(List.of(ENRICHED)).expectComplete().verify(TIMEOUT);
+			.then(remaining::assertWasNotSubscribed)
+			.then(deletion::complete)
+			.expectNext(List.of(ENRICHED)).expectComplete().verify(TIMEOUT);
 	}
 
 	@Test
@@ -103,7 +103,7 @@ class UserSubscriptionsServiceTests {
 		given(repository.findAttempts(USER, SubscriptionStatus.FAILED, "S2")).willReturn(Flux.just(FAILED));
 
 		service.findAttempts(USER, SubscriptionStatus.FAILED, "S2").as(StepVerifier::create)
-				.expectNext(FAILED).expectComplete().verify(TIMEOUT);
+			.expectNext(FAILED).expectComplete().verify(TIMEOUT);
 
 		verifyNoInteractions(metrics);
 	}

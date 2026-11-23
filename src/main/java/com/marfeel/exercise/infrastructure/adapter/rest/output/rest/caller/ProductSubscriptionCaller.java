@@ -10,12 +10,13 @@ import com.marfeel.exercise.infrastructure.adapter.rest.output.rest.client.S1Cli
 import com.marfeel.exercise.infrastructure.adapter.rest.output.rest.client.S2Client;
 import com.marfeel.exercise.infrastructure.adapter.rest.output.rest.mapper.ProviderSubscriptionRequestMapper;
 import com.marfeel.exercise.infrastructure.adapter.rest.output.rest.mapper.ProviderSubscriptionResponseMapper;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.stereotype.Component;
+
 import reactor.core.publisher.Mono;
 
-@Slf4j
+import lombok.RequiredArgsConstructor;
+
 @RequiredArgsConstructor
 @Component
 public class ProductSubscriptionCaller implements ProductSubscriptionClient {

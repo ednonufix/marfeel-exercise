@@ -5,6 +5,7 @@ import com.marfeel.exercise.application.dto.SubscriptionBatchResult.Result;
 import com.marfeel.exercise.domain.model.ProductRef;
 import com.marfeel.exercise.domain.vo.SubscriptionStatus;
 import com.marfeel.exercise.domain.vo.UserType;
+
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;

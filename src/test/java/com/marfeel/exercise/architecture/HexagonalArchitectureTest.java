@@ -6,15 +6,18 @@ import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.junit.ArchTests;
 
 @AnalyzeClasses(
-		packages = "com.marfeel.exercise",
-		importOptions = ImportOption.DoNotIncludeTests.class
+	packages = "com.marfeel.exercise",
+	importOptions = ImportOption.DoNotIncludeTests.class
 )
-public class HexagonalArchitectureTest {
+public final class HexagonalArchitectureTest {
 
 	@ArchTest
 	static final ArchTests hexagonalRules = ArchTests.in(HexagonalRules.class);
 
 	@ArchTest
 	static final ArchTests codingRules = ArchTests.in(CodingRules.class);
+
+	private HexagonalArchitectureTest() {
+	}
 
 }

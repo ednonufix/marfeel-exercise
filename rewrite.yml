@@ -3,8 +3,6 @@ type: specs.openrewrite.org/v1beta/recipe
 name: com.marfeel.Recipe
 recipeList:
   - org.openrewrite.hcl.format.RemoveTrailingWhitespace
-  - org.openrewrite.java.OrderImports
-  - org.openrewrite.java.RemoveUnusedImports
   - org.openrewrite.java.jspecify.MigrateToJSpecify
   - org.openrewrite.java.jspecify.JSpecifyBestPractices
   - org.openrewrite.java.testing.assertj.Assertj
@@ -15,6 +13,10 @@ recipeList:
   - org.openrewrite.staticanalysis.CodeCleanup
   - org.openrewrite.staticanalysis.CommonStaticAnalysis
   - org.openrewrite.staticanalysis.JavaApiBestPractices
+  - org.openrewrite.java.RemoveUnusedImports
+  - org.openrewrite.java.OrderImports
+  - org.openrewrite.java.format.NormalizeTabsOrSpaces
+  - org.openrewrite.java.format.TabsAndIndents
 ---
 type: specs.openrewrite.org/v1beta/style
 name: com.marfeel.Style
@@ -23,8 +25,8 @@ styleConfigs:
       classCountToUseStarImport: 999
       nameCountToUseStarImport: 999
       layout:
-        - import com.marfeel.*
-        - import static com.marfeel.*
+        - import com.marfeel.exercise.*
+        - import static com.marfeel.exercise.*
         - <blank line>
         - import org.springframework.*
         - import static org.springframework.*

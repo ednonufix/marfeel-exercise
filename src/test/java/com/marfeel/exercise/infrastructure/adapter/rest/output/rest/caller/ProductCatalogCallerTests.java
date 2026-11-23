@@ -1,9 +1,10 @@
 package com.marfeel.exercise.infrastructure.adapter.rest.output.rest.caller;
 
-import java.time.Duration;
-
 import com.marfeel.exercise.domain.model.S1Product;
 import com.marfeel.exercise.domain.model.S2Product;
+
+import java.time.Duration;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -11,7 +12,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
 
@@ -36,9 +36,9 @@ class ProductCatalogCallerTests {
 		given(s2.getProducts()).willReturn(Flux.just(s2Product));
 
 		caller.allProducts().collectList().as(StepVerifier::create)
-				.assertNext(products -> assertThat(products).containsExactlyInAnyOrder(
-						new S1Product("S1", "shared", "X1"), new S2Product("S2", "shared")))
-				.expectComplete().verify(TIMEOUT);
+			.assertNext(products -> assertThat(products).containsExactlyInAnyOrder(
+				new S1Product("S1", "shared", "X1"), new S2Product("S2", "shared")))
+			.expectComplete().verify(TIMEOUT);
 	}
 
 }

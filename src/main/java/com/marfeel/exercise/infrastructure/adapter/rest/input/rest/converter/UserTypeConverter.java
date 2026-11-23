@@ -1,8 +1,10 @@
 package com.marfeel.exercise.infrastructure.adapter.rest.input.rest.converter;
 
 import com.marfeel.exercise.domain.vo.UserType;
-import org.jspecify.annotations.NonNull;
+
 import org.springframework.core.convert.converter.Converter;
+
+import org.jspecify.annotations.NonNull;
 
 public class UserTypeConverter implements Converter<String, UserType> {
 

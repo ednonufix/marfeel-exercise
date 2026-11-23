@@ -49,6 +49,7 @@ logging:
     "com.marfeel": DEBUG
     "org.springframework.web.reactive.function.client.ExchangeFunctions": DEBUG
     "org.springframework.r2dbc.core.DefaultDatabaseClient": DEBUG
+    "org.springframework.cache.interceptor.CacheInterceptor": TRACE
 
 springdoc:
   default-produces-media-type: application/json

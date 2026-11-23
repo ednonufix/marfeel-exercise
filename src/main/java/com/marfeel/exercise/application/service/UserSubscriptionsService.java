@@ -1,7 +1,5 @@
 package com.marfeel.exercise.application.service;
 
-import java.util.List;
-
 import com.marfeel.exercise.application.dto.Attempt;
 import com.marfeel.exercise.application.dto.Subscription;
 import com.marfeel.exercise.application.dto.SubscriptionListFilter;
@@ -13,10 +11,15 @@ import com.marfeel.exercise.application.ports.output.ProductMetricsClient;
 import com.marfeel.exercise.application.ports.output.UserSubscriptionsRepository;
 import com.marfeel.exercise.domain.vo.SubscriptionStatus;
 import com.marfeel.exercise.domain.vo.UserType;
-import lombok.RequiredArgsConstructor;
+
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @Service
@@ -29,9 +32,9 @@ public class UserSubscriptionsService implements UserSubscriptionsUseCase {
 	@Override
 	public Mono<UserSubscriptions> getSubscriptions(SubscriptionListFilter subscriptionListFilter) {
 		return Mono.zip(
-				activeSubscription(subscriptionListFilter).collectList(),
-				repository.findAttempts(subscriptionListFilter.userType(), null, null).collectList(),
-				UserSubscriptions::new);
+			activeSubscription(subscriptionListFilter).collectList(),
+			repository.findAttempts(subscriptionListFilter.userType(), null, null).collectList(),
+			UserSubscriptions::new);
 	}
 
 	@Override
@@ -42,7 +45,7 @@ public class UserSubscriptionsService implements UserSubscriptionsUseCase {
 	@Override
 	public Mono<List<SubscriptionWithDetail>> unsubscribe(UserType userType, long subscriptionId) {
 		return repository.deleteActiveSubscription(userType, subscriptionId)
-				.then(activeSubscription(new SubscriptionListFilter(userType, null)).collectList());
+			.then(activeSubscription(new SubscriptionListFilter(userType, null)).collectList());
 	}
 
 	@Override

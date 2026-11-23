@@ -4,6 +4,7 @@ import com.marfeel.exercise.domain.model.ProductRef;
 import com.marfeel.exercise.domain.model.S1Product;
 import com.marfeel.exercise.domain.model.S2Product;
 import com.marfeel.exercise.domain.vo.UserType;
+
 import org.springframework.data.relational.core.query.Criteria;
 
 public record SubscriptionKey(String userId, String service, String productCode, String productSubcode) {
@@ -17,6 +18,6 @@ public record SubscriptionKey(String userId, String service, String productCode,
 
 	public Criteria criteria() {
 		return Criteria.where("userId").is(userId).and("service").is(service)
-				.and("productCode").is(productCode).and("productSubcode").is(productSubcode);
+			.and("productCode").is(productCode).and("productSubcode").is(productSubcode);
 	}
 }

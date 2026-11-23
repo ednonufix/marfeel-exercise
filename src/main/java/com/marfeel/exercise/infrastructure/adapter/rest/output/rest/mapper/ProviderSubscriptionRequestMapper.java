@@ -4,6 +4,7 @@ import com.marfeel.exercise.domain.model.S1Product;
 import com.marfeel.exercise.domain.model.S2Product;
 import com.marfeel.exercise.infrastructure.adapter.rest.output.rest.dto.S1SubscribeRequest;
 import com.marfeel.exercise.infrastructure.adapter.rest.output.rest.dto.S2SubscribeRequest;
+
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;

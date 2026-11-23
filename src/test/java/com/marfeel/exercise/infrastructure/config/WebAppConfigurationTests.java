@@ -1,10 +1,11 @@
 package com.marfeel.exercise.infrastructure.config;
 
 import com.marfeel.exercise.domain.vo.UserType;
-import org.junit.jupiter.api.Test;
+
 import org.springframework.core.convert.ConversionFailedException;
 import org.springframework.format.support.DefaultFormattingConversionService;
 
+import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 

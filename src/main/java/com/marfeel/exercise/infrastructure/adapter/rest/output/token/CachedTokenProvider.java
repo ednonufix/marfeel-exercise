@@ -12,10 +12,10 @@ public final class CachedTokenProvider implements TokenProvider {
 
 	public CachedTokenProvider(Mono<TokenResponse> tokenResponse) {
 		this.cachedToken = tokenResponse
-				.switchIfEmpty(Mono.error(() -> new IllegalStateException("Token endpoint returned an empty response")))
-				.map(response -> new CachedToken(response.token(), extractTtl(response.expiresIn())))
-				.cache(CachedToken::ttl, ignored -> Duration.ZERO, () -> Duration.ZERO)
-				.cast(Token.class);
+			.switchIfEmpty(Mono.error(() -> new IllegalStateException("Token endpoint returned an empty response")))
+			.map(response -> new CachedToken(response.token(), extractTtl(response.expiresIn())))
+			.cache(CachedToken::ttl, ignored -> Duration.ZERO, () -> Duration.ZERO)
+			.cast(Token.class);
 	}
 
 	@Override

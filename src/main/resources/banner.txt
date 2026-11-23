@@ -1,0 +1,8 @@
+${AnsiColor.BRIGHT_CYAN}.___  ___.      ___      .______       _______  _______  _______  __
+${AnsiColor.CYAN}|   \/   |     /   \     |   _  \     |   ____||   ____||   ____||  |
+${AnsiColor.BRIGHT_BLUE}|  \  /  |    /  ^  \    |  |_)  |    |  |__   |  |__   |  |__   |  |
+${AnsiColor.BLUE}|  |\/|  |   /  /_\  \   |      /     |   __|  |   __|  |   __|  |  |
+${AnsiColor.MAGENTA}|  |  |  |  /  _____  \  |  |\  \----.|  |     |  |____ |  |____ |  `----.
+${AnsiColor.BRIGHT_MAGENTA}|__|  |__| /__/     \__\ | _| `._____||__|     |_______||_______||_______|
+
+${AnsiColor.DEFAULT}Spring Boot version:${AnsiColor.BRIGHT_YELLOW}${spring-boot.formatted-version}${AnsiColor.DEFAULT}
