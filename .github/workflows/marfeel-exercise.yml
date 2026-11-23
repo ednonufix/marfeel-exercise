@@ -10,7 +10,7 @@ permissions:
   actions: read
   checks: write
 jobs:
-  alphabrokers-retarifier:
+  marfeel-exercise:
     runs-on: puzl-ubuntu-latest
     steps:
       - name: Checkout Repository
